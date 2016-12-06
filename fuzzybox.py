@@ -112,21 +112,31 @@ def convVF_DF(df):
 
 def separateByGenotype(df,genotype):
 	'''
-	params: df is a pandas dataframe with von frey data that has been pass through convVF_DF,
+	params: df is a pandas dataframe with von frey data that has been passed through convVF_DF,
 	type is a string with either 'TrkB' or 'Ret' to indicate whether the experimental group is 
 	Ret conditional or TrkB conditional
 	returns: 4 dataframes separated by genotype, extracts only those of the genotype indicated from the original
 	dataframe. In order the dataframes are: a wild-type control group, a cre and/or null control group,
 	a mutant group, and an all genotypes dataframe. 
 	'''
-
 	if genotype == 'TrkB':
 		wtc = df[df['Genotype'] == 'TrkBflox/+ or flox']
 		crec = df[df['Genotype'] == 'AdvCre/+; TrkBflox/+']
 		mt = df[df['Genotype'] == 'AdvCre/+; TrkBflox/flox']
 	elif genotype == 'Ret':
-		wtc = newdata[newdata['Genotype'] == 'Retflox/+']
-		crec = newdata[newdata['Genotype'] == 'RetCFP/flox or CFP/+']
-		mt = newdata[newdata['Genotype'] == 'AdvCre/+; RetCFP/flox']
+		wtc = df[df['Genotype'] == 'Retflox/+']
+		crec = df[df['Genotype'] == 'RetCFP/flox or CFP/+']
+		mt = df[df['Genotype'] == 'AdvCre/+; RetCFP/flox']
 	allgenotypes = pd.concat([wtc,crec,mt])
 	return wtc,crec,mt,allgenotypes
+
+def makeAverageDF(df):
+	'''
+	params: pandas dataframe that has been passed through separateByGenotype
+	returns: dataframe with average withdrawal threshold at each force for given genotype
+	'''
+	genotype = df['Genotype'].take([0]).tolist()[0]
+	df_average = df.groupby('Force').mean()
+	df_average['Genotype'] = genotype
+	df_average.reset_index(level=0,inplace=True)
+	return df_average
