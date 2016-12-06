@@ -89,8 +89,8 @@ def sigmoidFit(x,y):
     print(solution)
     return solution[0]
 
-def convVF_DF(df)
- 	'''
+def convVF_DF(df):
+	'''
  	params: df, pandas data frame obtained from von Frey csv file
  	returns: new pandas dataframe with von Frey filament numbers converted to grams and coverted from
  	heading to column, animal IDs and test date removed, withdrawal thresholds in column 'WD' and converted
@@ -110,3 +110,23 @@ def convVF_DF(df)
         	newdf = tempdf
     return newdf
 
+def separateByGenotype(df,genotype):
+	'''
+	params: df is a pandas dataframe with von frey data that has been pass through convVF_DF,
+	type is a string with either 'TrkB' or 'Ret' to indicate whether the experimental group is 
+	Ret conditional or TrkB conditional
+	returns: 4 dataframes separated by genotype, extracts only those of the genotype indicated from the original
+	dataframe. In order the dataframes are: a wild-type control group, a cre and/or null control group,
+	a mutant group, and an all genotypes dataframe. 
+	'''
+
+	if genotype == 'TrkB':
+		wtc = df[df['Genotype'] == 'TrkBflox/+ or flox']
+		crec = df[df['Genotype'] == 'AdvCre/+; TrkBflox/+']
+		mt = df[df['Genotype'] == 'AdvCre/+; TrkBflox/flox']
+	elif genotype == 'Ret':
+		wtc = newdata[newdata['Genotype'] == 'Retflox/+']
+		crec = newdata[newdata['Genotype'] == 'RetCFP/flox or CFP/+']
+		mt = newdata[newdata['Genotype'] == 'AdvCre/+; RetCFP/flox']
+	allgenotypes = pd.concat([wtc,crec,mt])
+	return wtc,crec,mt,allgenotypes
