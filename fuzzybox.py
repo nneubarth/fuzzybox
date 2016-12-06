@@ -2,7 +2,8 @@
 from scipy.optimize import leastsq
 import subprocess as sp
 import numpy as np
-
+import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def initVidPipeline(vidpath): 
@@ -87,3 +88,25 @@ def sigmoidFit(x,y):
     solution= leastsq(residuals,start_sigmoid,args=(x,y)) 
     print(solution)
     return solution[0]
+
+def convVF_DF(df)
+ 	'''
+ 	params: df, pandas data frame obtained from von Frey csv file
+ 	returns: new pandas dataframe with von Frey filament numbers converted to grams and coverted from
+ 	heading to column, animal IDs and test date removed, withdrawal thresholds in column 'WD' and converted
+ 	to fraction out of 10.
+ 	'''
+ 	forcesdict = {'1.65':.008,'2.36':.02,'2.83':.07,'3.2':.16,'3.61':.4,'3.84':.6,'4.08':1,'4.17':1.4,'4.31':2,'4.56':4}
+ 	for f in df.columns[3:]:
+    	force = forcesdict[f]
+    	tempdf = pd.concat([df['Genotype'],df[f]],axis=1)
+    	tempdf['Force'] = force
+    
+    	tempdf.rename(columns={f:'WD'}, inplace=True)
+    	tempdf['WD'] = tempdf['WD'].apply(lambda x: x/10.0)
+    	try:
+        	newdf = pd.concat([newdf,tempdf])
+    	except NameError:
+        	newdf = tempdf
+    return newdf
+
