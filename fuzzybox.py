@@ -140,3 +140,22 @@ def makeAverageDF(df):
 	df_average['Genotype'] = genotype
 	df_average.reset_index(level=0,inplace=True)
 	return df_average
+
+def calcBootstrap(x,y):
+	'''
+	params: x and y data points as numpy arrays
+	returns: bootstrapped mean sigmoid fit and standard deviation of sigmoid fit as a numpy array
+	'''
+    x_sig = np.linspace(min(x),max(x),num=100)
+    for i in range(1000):
+        samp_indices = np.random.choice(range(0,len(x)),size=(1,len(x)),replace=True, p=None)
+        sampx = x[samp_indices].flatten()
+        sampy = y[samp_indices].flatten()
+        try:
+            ps = np.vstack((ps, sigmoidFit(sampx,sampy)[0].flatten()))
+            all_sigs = np.vstack((all_sigs, sigmoid(sigmoidFit(sampx,sampy)[0],x_sig).flatten()))
+        except NameError:
+            ps = sigmoidFit(sampx,sampy)[0]
+            all_sigs = sigmoid(sigmoidFit(sampx,sampy)[0],x_sig).flatten()
+                
+    return all_sigs.mean(axis=0), all_sigs.std(axis=0)
