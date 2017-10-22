@@ -98,9 +98,9 @@ def convVF_DF(df):
 	to fraction out of 10.
 	'''
 	forcesdict = {'1.65':.008,'2.36':.02,'2.83':.07,'3.2':.16,'3.61':.4,'3.84':.6,'4.08':1,'4.17':1.4,'4.31':2,'4.56':4}
-	for f in df.columns[3:]:
+	for f in df.columns[5:]:
 		force = forcesdict[f]
-		tempdf = pd.concat([df['Genotype'],df[f]],axis=1)
+		tempdf = pd.concat([df['Genotype'],df['Sex'],df['Type'],df[f]],axis=1)
 		tempdf['Force'] = force
 
 		tempdf.rename(columns={f:'WD'}, inplace=True)
@@ -124,14 +124,17 @@ def separateByGenotype(df,genotype):
 		wtc = df[df['Genotype'] == 'TrkBflox/+ or flox']
 		crec = df[df['Genotype'] == 'AdvCre/+; TrkBflox/+']
 		mt = df[df['Genotype'] == 'AdvCre/+; TrkBflox/flox']
-		cfpc = []
-	elif genotype == 'Ret':
-		wtc = df[df['Genotype'] == 'Retflox/+']
-		cfpc = df[df['Genotype'] == 'RetCFP/flox or CFP/+']
-		crec = df[df['Genotype'] == 'AdvCre/+; Retflox/+']
-		mt = df[df['Genotype'] == 'AdvCre/+; RetCFP/flox']
-	allgenotypes = pd.concat([wtc,crec,mt])
-	return wtc,cfpc,crec,mt,allgenotypes
+		allgenotypes = pd.concat([wtc,crec,mt])
+		return wtc,crec,mt,allgenotypes
+	elif genotype == 'P2':
+		wtc = df[df['Genotype'] == 'P2flox/+']
+		nullc = df[df['Genotype'] == 'P2flox/null']
+		tcrec = df[df['Genotype'] == 'TrkBCreER; P2flox/+']
+		rcrec = df[df['Genotype'] == 'RetCreER; P2flox/+']
+		tmt = df[df['Genotype'] == 'TrkBCreER; P2flox/null']
+		rmt = df[df['Genotype'] == 'RetCreER; P2flox/null']
+		allgenotypes = pd.concat([wtc,nullc,tcrec,rcrec,tmt,rmt])
+		return wtc,nullc,tcrec,rcrec,tmt,rmt,allgenotypes
 
 def makeAverageDF(df):
 	'''
@@ -170,20 +173,33 @@ def plotSigWithFit(average_df,color):
 	wd_val = np.array(average_df['WD'])
 	sigfit = sigmoidFit(force_val,wd_val)[0]
 	x_sig = np.linspace(min(force_val),max(force_val),num=100)
-	plt.plot(x_sig,sigmoid(sigfit,x_sig),linestyle='--',color=color)
+	plt.plot(x_sig,sigmoid(sigfit,x_sig),color=color)
 	return
 
 def plotVF(df,genotype):
 	from scipy.optimize import leastsq
-	wtc,cfpc,crec,mt,allgenotypes = separateByGenotype(df,genotype)
-	plt.figure()
-	wtc_average = makeAverageDF(wtc)
-	crec_average = makeAverageDF(crec)
-	mt_average = makeAverageDF(mt)
-	plotSigWithFit(wtc_average, 'b')
-	plotSigWithFit(crec_average, 'g')
-	plotSigWithFit(mt_average, 'r')
-	if genotype == 'Ret':
-		cfpc_average = makeAverageDF(cfpc)
-		plotSigWithFit(cfpc_average, 'y')
+	if genotype == 'TrkB':
+		wtc,crec,mt,allgenotypes = separateByGenotype(df,genotype)
+		plt.figure()
+		wtc_average = makeAverageDF(wtc)
+		crec_average = makeAverageDF(crec)
+		mt_average = makeAverageDF(mt)
+		plotSigWithFit(wtc_average, 'b')
+		plotSigWithFit(crec_average, 'g')
+		plotSigWithFit(mt_average, 'r')
+	if genotype == 'P2':
+		wtc,nullc,tcrec,rcrec,tmt,rmt,allgenotypes = separateByGenotype(df,genotype)
+		plt.figure()
+		wtc_average = makeAverageDF(wtc)
+		null_average = makeAverageDF(nullc)
+		tcrec_average = makeAverageDF(tcrec)
+		rcrec_average = makeAverageDF(rcrec)
+		tmt_average = makeAverageDF(tmt)
+		rmt_average = makeAverageDF(tmt)
+		plotSigWithFit(wtc_average, 'b')
+		plotSigWithFit(tcrec_average, 'g')
+		plotSigWithFit(rcrec_average, 'g')
+		plotSigWithFit(tmt_average, 'r')
+		plotSigWithFit(tmt_average, 'k')
+		plotSigWithFit(null_average, 'y')
 	return
